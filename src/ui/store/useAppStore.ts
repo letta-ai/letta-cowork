@@ -180,7 +180,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
         if (state.pendingStart) {
           get().setActiveSessionId(sessionId);
-          set({ pendingStart: false, showStartModal: false });
+          set({ pendingStart: false, showStartModal: false, prompt: "" });
         }
         break;
       }
