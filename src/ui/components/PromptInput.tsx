@@ -35,14 +35,15 @@ export function usePromptActions(sendEvent: (event: ClientEvent) => void) {
         type: "session.start",
         payload: { title: "", prompt, cwd: cwd.trim() || undefined, allowedTools: DEFAULT_ALLOWED_TOOLS }
       });
+      // Don't clear prompt yet - wait for modal to close to avoid UI flicker
     } else {
       if (activeSession?.status === "running") {
         setGlobalError("Session is still running. Please wait for it to finish.");
         return;
       }
       sendEvent({ type: "session.continue", payload: { sessionId: activeSessionId, prompt } });
+      setPrompt("");
     }
-    setPrompt("");
   }, [activeSession, activeSessionId, cwd, prompt, sendEvent, setGlobalError, setPendingStart, setPrompt]);
 
   const handleStop = useCallback(() => {
