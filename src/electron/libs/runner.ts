@@ -1,7 +1,7 @@
-import { 
+import {
+  createAgent,
   createSession,
   resumeSession,
-  resumeConversation,
   type Session as LettaSession,
   type SDKMessage,
   type CanUseToolResponse,
@@ -82,26 +82,27 @@ export async function runLetta(options: RunnerOptions): Promise<RunnerHandle> {
         return { behavior: "allow" as const };
       };
 
-      // Create session (sync - init happens on first send)
-      const lettaSession: LettaSession = resumeConversationId
-        ? resumeConversation(resumeConversationId, {
-            cwd: session.cwd ?? DEFAULT_CWD,
-            permissionMode: "bypassPermissions",
-            canUseTool,
-          })
-        : cachedAgentId
-        ? resumeSession(cachedAgentId, {
-            cwd: session.cwd ?? DEFAULT_CWD,
-            permissionMode: "bypassPermissions",
-            newConversation: true,
-            canUseTool,
-          })
-        : createSession({
-            cwd: session.cwd ?? DEFAULT_CWD,
-            permissionMode: "bypassPermissions",
-            newConversation: true, // Always create new conversation in this example, never default
-            canUseTool,
-          });
+      // Session options
+      const sessionOptions = {
+        cwd: session.cwd ?? DEFAULT_CWD,
+        permissionMode: "bypassPermissions" as const,
+        canUseTool,
+      };
+
+      // Create or resume session
+      let lettaSession: LettaSession;
+
+      if (resumeConversationId) {
+        // Resume specific conversation
+        lettaSession = resumeSession(resumeConversationId, sessionOptions);
+      } else if (cachedAgentId) {
+        // Create new conversation on existing agent
+        lettaSession = createSession(cachedAgentId, sessionOptions);
+      } else {
+        // First time - create agent, then create conversation
+        cachedAgentId = await createAgent();
+        lettaSession = createSession(cachedAgentId, sessionOptions);
+      }
 
       // Store for abort handling
       activeLettaSession = lettaSession;
