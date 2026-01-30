@@ -64,7 +64,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
         apiKey: apiKey.trim(),
         baseURL: baseURL.trim(),
         model: model.trim(),
-        apiType: "anthropic"
+        apiType: "letta"
       });
 
       if (result.success) {
@@ -99,7 +99,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
             </svg>
           </button>
         </div>
-        <p className="mt-2 text-sm text-muted">Supports Anthropic’s official API as well as third-party APIs compatible with the Anthropic format.</p>
+        <p className="mt-2 text-sm text-muted">Configure your Letta API connection. Get your API key from app.letta.com/settings.</p>
 
         {loading ? (
           <div className="mt-5 flex items-center justify-center py-8">
@@ -115,7 +115,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
               <input
                 type="url"
                 className="rounded-xl border border-ink-900/10 bg-surface-secondary px-4 py-2.5 text-sm text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors"
-                placeholder="htts://..."
+                placeholder="https://api.letta.com"
                 value={baseURL}
                 onChange={(e) => setBaseURL(e.target.value)}
                 required
@@ -139,7 +139,7 @@ export function SettingsModal({ onClose }: SettingsModalProps) {
               <input
                 type="text"
                 className="rounded-xl border border-ink-900/10 bg-surface-secondary px-4 py-2.5 text-sm text-ink-800 placeholder:text-muted-light focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 transition-colors"
-                placeholder="claude-3-5-sonnet-20241022"
+                placeholder="claude-sonnet-4-20250514"
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
                 required
