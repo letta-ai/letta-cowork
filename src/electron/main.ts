@@ -17,10 +17,10 @@ try {
     }
   }
   
-  // Default to localhost if no base URL set
+  // Default to Letta Cloud if no base URL set
   if (!process.env.LETTA_BASE_URL) {
-    process.env.LETTA_BASE_URL = "http://localhost:8283";
-    console.log("Set LETTA_BASE_URL to localhost");
+    process.env.LETTA_BASE_URL = "https://api.letta.com";
+    console.log("Set LETTA_BASE_URL to Letta Cloud (api.letta.com)");
   }
   
   // Set dummy API key for localhost (local server doesn't check it)

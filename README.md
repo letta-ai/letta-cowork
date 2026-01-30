@@ -51,17 +51,20 @@ Agents remember across conversations (via memory blocks), but each conversation 
 
 ### Environment Setup
 
-Create a `.env` file:
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
 
-```bash
-# For Letta Cloud
-LETTA_API_KEY=your-api-key
-LETTA_BASE_URL=https://api.letta.com
+2. Get your Letta API key from [app.letta.com/settings](https://app.letta.com/settings)
 
-# For local development
-LETTA_BASE_URL=http://localhost:8283
-LETTA_API_KEY=dummy  # Local server ignores this
-```
+3. Edit `.env` and add your API key:
+   ```bash
+   LETTA_API_KEY=your-api-key-here
+   LETTA_BASE_URL=https://api.letta.com  # This is the default
+   ```
+
+**Note:** The app defaults to Letta Cloud (`https://api.letta.com`). For local development, see `.env.example` for localhost configuration.
 
 ### Running the App
 
