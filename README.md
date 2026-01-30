@@ -12,6 +12,12 @@ A desktop application for running Letta Code agents with a visual interface.
 
 Letta Cowork is a fork of [Claude-Cowork](https://github.com/DevAgentForge/Claude-Cowork) that replaces the Claude SDK with the [`@letta-ai/letta-code-sdk`](https://www.npmjs.com/package/@letta-ai/letta-code-sdk). It provides a native desktop GUI for interacting with [Letta Code](https://github.com/letta-ai/letta-code) agents.
 
+
+
+https://github.com/user-attachments/assets/e05cb06b-054f-4c7f-97ae-b82dbd9a1334
+
+
+
 ### Why Letta Code SDK?
 
 The [Letta Code SDK](https://github.com/letta-ai/letta-code-sdk) is the SDK interface to [Letta Code](https://github.com/letta-ai/letta-code). Build agents with persistent memory that learn over time.
