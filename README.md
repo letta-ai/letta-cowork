@@ -52,8 +52,8 @@ Agents remember across conversations (via memory blocks), but each conversation 
 ### Prerequisites
 
 - [Bun](https://bun.sh/) or Node.js 22+
-- [Letta Code](https://github.com/letta-ai/letta-code) CLI installed
-- A running Letta server (local or cloud)
+- Letta API key from [app.letta.com/settings](https://app.letta.com/settings)
+- [letta-code-sdk](https://github.com/letta-ai/letta-code-sdk) cloned locally at `../letta-code-sdk` (temporary - will be published to npm)
 
 ### Environment Setup
 
