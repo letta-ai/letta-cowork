@@ -228,7 +228,7 @@ function App() {
           className="flex items-center justify-center h-12 border-b border-ink-900/10 bg-surface-cream select-none"
           style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
         >
-          <span className="text-sm font-medium text-ink-700">{activeSession?.title || "Agent Cowork"}</span>
+          <span className="text-sm font-medium text-ink-700">{activeSession?.title || "Letta Cowork"}</span>
         </div>
 
         <div
@@ -264,7 +264,7 @@ function App() {
             {visibleMessages.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <div className="text-lg font-medium text-ink-700">No messages yet</div>
-                <p className="mt-2 text-sm text-muted">Start a conversation with agent cowork</p>
+                <p className="mt-2 text-sm text-muted">Start a conversation with Letta Cowork</p>
               </div>
             ) : (
               visibleMessages.map((item, idx) => (

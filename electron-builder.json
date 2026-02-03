@@ -1,6 +1,6 @@
 {
-    "appId": "com.devagentforge.agentcowork",
-    "productName": "Agent Cowork",
+    "appId": "com.letta.cowork",
+    "productName": "Letta Cowork",
     "files": [
         "dist-electron",
         "dist-react"
@@ -9,9 +9,9 @@
         "dist-electron/preload.cjs"
     ],
     "asarUnpack": [
-        "node_modules/@anthropic-ai/claude-agent-sdk/**/*"
+        "node_modules/@letta-ai/letta-code-sdk/**/*",
+        "node_modules/@letta-ai/letta-code/**/*"
     ],
-    "icon": "./claude-color.png",
     "mac": {
         "target": "dmg"
     },
