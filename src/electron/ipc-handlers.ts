@@ -9,6 +9,24 @@ import {
   deleteSession,
 } from "./libs/runtime-state.js";
 
+const DEBUG = process.env.DEBUG_IPC === "true";
+
+// Simple logger for IPC handlers
+const log = (msg: string, data?: Record<string, unknown>) => {
+  const timestamp = new Date().toISOString();
+  if (data) {
+    console.log(`[${timestamp}] [ipc] ${msg}`, JSON.stringify(data, null, 2));
+  } else {
+    console.log(`[${timestamp}] [ipc] ${msg}`);
+  }
+};
+
+// Debug-only logging (verbose)
+const debug = (msg: string, data?: Record<string, unknown>) => {
+  if (!DEBUG) return;
+  log(msg, data);
+};
+
 // Track active runner handles
 const runnerHandles = new Map<string, RunnerHandle>();
 
@@ -29,6 +47,8 @@ function emit(event: ServerEvent) {
 }
 
 export async function handleClientEvent(event: ClientEvent) {
+  debug(`handleClientEvent: ${event.type}`, { payload: 'payload' in event ? event.payload : undefined });
+  
   if (event.type === "session.list") {
     // TODO: Implement listing via letta-client once we track agentId
     // For now, return empty - sessions are created via SDK
@@ -49,12 +69,14 @@ export async function handleClientEvent(event: ClientEvent) {
   }
 
   if (event.type === "session.start") {
+    debug("session.start: starting new session", { prompt: event.payload.prompt.slice(0, 50), cwd: event.payload.cwd });
     const pendingPermissions = new Map<string, PendingPermission>();
 
     try {
       let conversationId: string | null = null;
       let handle: RunnerHandle | null = null;
       
+      debug("session.start: calling runLetta");
       handle = await runLetta({
         prompt: event.payload.prompt,
         session: {
@@ -74,8 +96,10 @@ export async function handleClientEvent(event: ClientEvent) {
         },
         onSessionUpdate: (updates) => {
           // Called when session is initialized with conversationId
+          debug("session.start: onSessionUpdate called", { updates });
           if (updates.lettaConversationId && !conversationId) {
             conversationId = updates.lettaConversationId;
+            debug("session.start: session initialized", { conversationId });
             
             createRuntimeSession(conversationId);
             updateSession(conversationId, { status: "running" });
@@ -93,7 +117,9 @@ export async function handleClientEvent(event: ClientEvent) {
           }
         },
       });
+      debug("session.start: runLetta returned handle");
     } catch (error) {
+      log("session.start: ERROR", { error: String(error) });
       console.error("Failed to start session:", error);
       emit({
         type: "runner.error",
@@ -105,10 +131,15 @@ export async function handleClientEvent(event: ClientEvent) {
 
   if (event.type === "session.continue") {
     const conversationId = event.payload.sessionId;
+    debug("session.continue: continuing session", { conversationId, prompt: event.payload.prompt.slice(0, 50) });
+    
     let runtimeSession = getSession(conversationId);
     
     if (!runtimeSession) {
+      debug("session.continue: no runtime session found, creating new one");
       runtimeSession = createRuntimeSession(conversationId);
+    } else {
+      debug("session.continue: found existing runtime session", { status: runtimeSession.status });
     }
 
     updateSession(conversationId, { status: "running" });
@@ -123,6 +154,9 @@ export async function handleClientEvent(event: ClientEvent) {
     });
 
     try {
+      debug("session.continue: calling runLetta", { conversationId });
+      let actualConversationId = conversationId;
+      
       const handle = await runLetta({
         prompt: event.payload.prompt,
         session: {
@@ -133,11 +167,53 @@ export async function handleClientEvent(event: ClientEvent) {
           pendingPermissions: runtimeSession.pendingPermissions,
         },
         resumeConversationId: conversationId,
-        onEvent: emit,
-        onSessionUpdate: () => {},
+        onEvent: (e) => {
+          // Update sessionId in events if we got a new conversationId
+          if (actualConversationId !== conversationId && "sessionId" in e.payload) {
+            const payload = e.payload as { sessionId: string };
+            payload.sessionId = actualConversationId;
+          }
+          emit(e);
+        },
+        onSessionUpdate: (updates) => {
+          // If we get a new conversationId (e.g., fallback from invalid ID), update everything
+          if (updates.lettaConversationId && updates.lettaConversationId !== conversationId) {
+            log("session.continue: received new conversationId from runner", { 
+              old: conversationId, 
+              new: updates.lettaConversationId 
+            });
+            actualConversationId = updates.lettaConversationId;
+            
+            // Delete the old invalid session from UI and runtime state
+            deleteSession(conversationId);
+            emit({ type: "session.deleted", payload: { sessionId: conversationId } });
+            
+            // Create new runtime session for the actual conversation
+            createRuntimeSession(actualConversationId);
+            updateSession(actualConversationId, { status: "running" });
+            
+            // Notify UI about the new session
+            emit({
+              type: "session.status",
+              payload: { 
+                sessionId: actualConversationId, 
+                status: "running", 
+                title: actualConversationId, 
+                cwd: event.payload.cwd 
+              },
+            });
+            // Re-emit the user prompt for the new session
+            emit({
+              type: "stream.user_prompt",
+              payload: { sessionId: actualConversationId, prompt: event.payload.prompt },
+            });
+          }
+        },
       });
-      runnerHandles.set(conversationId, handle);
+      debug("session.continue: runLetta returned handle");
+      runnerHandles.set(actualConversationId, handle);
     } catch (error) {
+      log("session.continue: ERROR", { error: String(error) });
       updateSession(conversationId, { status: "error" });
       emit({
         type: "session.status",
@@ -149,10 +225,14 @@ export async function handleClientEvent(event: ClientEvent) {
 
   if (event.type === "session.stop") {
     const conversationId = event.payload.sessionId;
+    debug("session.stop: stopping session", { conversationId });
     const handle = runnerHandles.get(conversationId);
     if (handle) {
+      debug("session.stop: aborting handle");
       handle.abort();
       runnerHandles.delete(conversationId);
+    } else {
+      debug("session.stop: no handle found");
     }
     updateSession(conversationId, { status: "idle" });
     emit({
