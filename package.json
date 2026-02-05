@@ -19,7 +19,7 @@
 		"dist:linux": "bun run transpile:electron && bun run build && electron-builder --linux --x64"
 	},
 	"dependencies": {
-		"@letta-ai/letta-code-sdk": "file:../letta-code-sdk",
+		"@letta-ai/letta-code-sdk": "^0.0.5",
 		"@radix-ui/react-dialog": "^1.1.15",
 		"@radix-ui/react-dropdown-menu": "^2.1.16",
 		"@tailwindcss/vite": "^4.1.18",
