@@ -25,3 +25,9 @@ dist-electron
 *.sw?
 
 .env
+
+# Package manager
+bun.lock
+
+# Letta
+.letta/
