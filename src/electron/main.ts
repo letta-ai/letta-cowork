@@ -19,10 +19,13 @@ if (!process.env.LETTA_API_KEY && process.env.LETTA_BASE_URL?.includes("localhos
 
 // Find letta CLI
 try {
-  const lettaPath = execSync("which letta", { encoding: "utf-8" }).trim();
+  const whichCmd = process.platform === 'win32' ? 'where letta' : 'which letta';
+  const lettaPath = execSync(whichCmd, { encoding: "utf-8" }).trim();
   if (lettaPath) {
-    process.env.LETTA_CLI_PATH = lettaPath;
-    console.log("Found letta CLI at:", lettaPath);
+    // On Windows, 'where' may return multiple lines - take the first one
+    const firstPath = lettaPath.split('\n')[0].trim();
+    process.env.LETTA_CLI_PATH = firstPath;
+    console.log("Found letta CLI at:", firstPath);
   }
 } catch (e) {
   console.warn("Could not find letta CLI:", e);

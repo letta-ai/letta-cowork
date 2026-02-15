@@ -6,7 +6,7 @@
 	"main": "dist-electron/main.js",
 	"scripts": {
 		"rebuild": "npx electron-rebuild -f -w better-sqlite3",
-		"dev": "pkill -f vite 2>/dev/null; pkill -f electron 2>/dev/null; sleep 1; bun run dev:react & bun run dev:electron",
+		"dev": "concurrently -k --kill-others-on-fail \"bun run dev:react\" \"bun run dev:electron\"",
 		"dev:react": "vite",
 		"dev:electron": "bun run transpile:electron && cross-env NODE_ENV=development electron .",
 		"build": "tsc -b && vite build",
@@ -44,6 +44,7 @@
 		"@types/react": "^19.2.7",
 		"@types/react-dom": "^19.2.3",
 		"@vitejs/plugin-react": "^5.1.2",
+		"concurrently": "^9.2.1",
 		"cross-env": "^10.1.0",
 		"electron": "^39.2.7",
 		"electron-builder": "^26.4.0",
