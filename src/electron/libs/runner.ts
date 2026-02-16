@@ -3,7 +3,6 @@ import {
   resumeSession,
   type Session as LettaSession,
   type SDKMessage,
-  type CanUseToolResponse,
 } from "@letta-ai/letta-code-sdk";
 import type { ServerEvent } from "../types.js";
 import type { PendingPermission } from "./runtime-state.js";
@@ -85,34 +84,6 @@ export async function runLetta(options: RunnerOptions): Promise<RunnerHandle> {
   // Start the query in the background
   (async () => {
     try {
-      // Common options for canUseTool
-      const canUseTool = async (toolName: string, input: unknown) => {
-        // For AskUserQuestion, we need to wait for user response
-        if (toolName === "AskUserQuestion") {
-          const toolUseId = crypto.randomUUID();
-          sendPermissionRequest(toolUseId, toolName, input);
-          return new Promise<CanUseToolResponse>((resolve) => {
-            session.pendingPermissions.set(toolUseId, {
-              toolUseId,
-              toolName,
-              input,
-              resolve: (result) => {
-                session.pendingPermissions.delete(toolUseId);
-                resolve(result);
-              }
-            });
-          });
-        }
-        return { behavior: "allow" as const };
-      };
-
-      // Session options
-      const sessionOptions = {
-        cwd: session.cwd ?? DEFAULT_CWD,
-        permissionMode: "bypassPermissions" as const,
-        canUseTool,
-      };
-
       // Create or resume session
       let lettaSession: LettaSession;
 
@@ -127,7 +98,7 @@ export async function runLetta(options: RunnerOptions): Promise<RunnerHandle> {
       if (resumeConversationId && isValidLettaId(resumeConversationId)) {
         // Resume specific conversation
         debug("creating session: resumeSession with conversationId", { resumeConversationId });
-        lettaSession = resumeSession(resumeConversationId, sessionOptions);
+        lettaSession = resumeSession(resumeConversationId);
       } else if (resumeConversationId && !isValidLettaId(resumeConversationId)) {
         // Invalid ID provided - log warning and fall back to cachedAgentId
         log("WARNING: invalid resumeConversationId, falling back", { 
@@ -136,19 +107,19 @@ export async function runLetta(options: RunnerOptions): Promise<RunnerHandle> {
         });
         if (cachedAgentId) {
           debug("creating session: resumeSession with cachedAgentId (fallback)", { cachedAgentId });
-          lettaSession = resumeSession(cachedAgentId, sessionOptions);
+          lettaSession = resumeSession(cachedAgentId);
         } else {
           debug("creating session: createSession (new agent, fallback)");
-          lettaSession = createSession(sessionOptions);
+          lettaSession = createSession();
         }
       } else if (cachedAgentId) {
         // Create new conversation on existing agent
         debug("creating session: resumeSession with cachedAgentId", { cachedAgentId });
-        lettaSession = resumeSession(cachedAgentId, sessionOptions);
+        lettaSession = resumeSession(cachedAgentId);
       } else {
         // First time - create new agent and session
         debug("creating session: createSession (new agent)");
-        lettaSession = createSession(sessionOptions);
+        lettaSession = createSession();
       }
       debug("session created successfully");
 
