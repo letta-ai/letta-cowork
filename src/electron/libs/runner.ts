@@ -139,7 +139,7 @@ export async function runLetta(options: RunnerOptions): Promise<RunnerHandle> {
           lettaSession = resumeSession(cachedAgentId, sessionOptions);
         } else {
           debug("creating session: createSession (new agent, fallback)");
-          lettaSession = createSession(sessionOptions);
+          lettaSession = createSession(undefined, sessionOptions);
         }
       } else if (cachedAgentId) {
         // Create new conversation on existing agent
@@ -148,7 +148,7 @@ export async function runLetta(options: RunnerOptions): Promise<RunnerHandle> {
       } else {
         // First time - create new agent and session
         debug("creating session: createSession (new agent)");
-        lettaSession = createSession(sessionOptions);
+        lettaSession = createSession(undefined, sessionOptions);
       }
       debug("session created successfully");
 
