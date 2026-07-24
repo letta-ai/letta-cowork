@@ -299,6 +299,16 @@ export function MessageCard({
     case "tool_result":
       return <ToolResultCard message={sdkMessage} />;
     
+    case "error":
+      return (
+        <div className="flex flex-col gap-2 mt-4">
+          <div className="header text-error">Error</div>
+          <div className="rounded-xl bg-error-light p-3">
+            <pre className="text-sm text-error whitespace-pre-wrap">{sdkMessage.message}</pre>
+          </div>
+        </div>
+      );
+
     case "result":
       // Don't render session result
       if (sdkMessage.success) {

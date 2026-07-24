@@ -9,7 +9,7 @@
         "dist-electron/preload.cjs"
     ],
     "asarUnpack": [
-        "node_modules/@letta-ai/letta-code-sdk/**/*",
+        "node_modules/@letta-ai/letta-agent-sdk/**/*",
         "node_modules/@letta-ai/letta-code/**/*"
     ],
     "mac": {
