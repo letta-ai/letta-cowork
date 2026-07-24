@@ -206,40 +206,55 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       case "stream.message": {
         const { sessionId, message } = event.payload;
+        const msgType = message.type;
+
+        // Protocol/progress messages the UI never renders - don't store them.
+        // (stream_event partials are handled separately in App.tsx.)
+        if (
+          msgType === "stream_event" ||
+          msgType === "loop_status" ||
+          msgType === "queue_update" ||
+          msgType === "retry"
+        ) {
+          break;
+        }
+
         set((state) => {
           const existing = state.sessions[sessionId] ?? createSession(sessionId);
           const messages = [...existing.messages];
-          
+
           // Get message ID (uuid for SDK messages)
           const msgId = 'uuid' in message ? message.uuid : undefined;
-          const msgType = message.type;
-          
-          if (msgId) {
-            // Find existing message with same ID
+          const last = messages[messages.length - 1];
+
+          if (
+            (msgType === "reasoning" || msgType === "assistant") &&
+            last &&
+            last.type === msgType
+          ) {
+            // Streaming chunks arrive as separate messages (each with its own
+            // uuid on the app-server transport) - merge consecutive chunks of
+            // the same type into a single message.
+            const lastContent = 'content' in last ? last.content : "";
+            const newContent = 'content' in message ? message.content : "";
+            messages[messages.length - 1] = {
+              ...message,
+              content: lastContent + newContent
+            } as StreamMessage;
+          } else if (msgId) {
+            // Find existing message with same ID (e.g. tool_call updates)
             const existingIdx = messages.findIndex(
               (m) => 'uuid' in m && m.uuid === msgId
             );
             if (existingIdx >= 0) {
-              // For streaming messages, ACCUMULATE content (SDK sends deltas)
-              if (msgType === "reasoning" || msgType === "assistant") {
-                const existingMsg = messages[existingIdx];
-                const existingContent = 'content' in existingMsg ? existingMsg.content : "";
-                const newContent = 'content' in message ? message.content : "";
-                messages[existingIdx] = {
-                  ...message,
-                  content: existingContent + newContent
-                } as StreamMessage;
-              } else {
-                // Other messages: replace
-                messages[existingIdx] = message;
-              }
+              messages[existingIdx] = message;
             } else {
               messages.push(message);
             }
           } else {
             messages.push(message);
           }
-          
+
           return {
             sessions: {
               ...state.sessions,

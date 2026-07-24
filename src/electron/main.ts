@@ -7,29 +7,10 @@ import { ipcMainHandle, isDev, DEV_PORT } from "./util.js";
 // Load .env file from project root
 dotenvConfig({ path: join(process.cwd(), ".env") });
 
-// Default to Letta Cloud if no base URL set
-if (!process.env.LETTA_BASE_URL) {
-  process.env.LETTA_BASE_URL = "https://api.letta.com";
-}
-
-// Set dummy API key for localhost (local server doesn't check it)
-if (!process.env.LETTA_API_KEY && process.env.LETTA_BASE_URL?.includes("localhost")) {
-  process.env.LETTA_API_KEY = "local-dev-key";
-}
-
-// Find letta CLI
-try {
-  const whichCmd = process.platform === 'win32' ? 'where letta' : 'which letta';
-  const lettaPath = execSync(whichCmd, { encoding: "utf-8" }).trim();
-  if (lettaPath) {
-    // On Windows, 'where' may return multiple lines - take the first one
-    const firstPath = lettaPath.split('\n')[0].trim();
-    process.env.LETTA_CLI_PATH = firstPath;
-    console.log("Found letta CLI at:", firstPath);
-  }
-} catch (e) {
-  console.warn("Could not find letta CLI:", e);
-}
+// Backend selection (local runtime / remote app server / cloud) is resolved in
+// libs/runner.ts from LETTA_BACKEND, LETTA_API_KEY, and LETTA_SERVER_URL.
+// The SDK bundles its own Letta Code CLI (@letta-ai/letta-code); a user-set
+// LETTA_CLI_PATH still takes precedence if exported in the environment.
 import { getPreloadPath, getUIPath, getIconPath } from "./pathResolver.js";
 import { getStaticData, pollResources, stopPolling } from "./test.js";
 import { handleClientEvent, cleanupAllSessions } from "./ipc-handlers.js";

@@ -12,7 +12,7 @@ export type {
   SDKReasoningMessage,
   SDKResultMessage,
   CanUseToolResponse,
-} from "@letta-ai/letta-code-sdk";
+} from "@letta-ai/letta-agent-sdk";
 
 export type UserPromptMessage = {
   type: "user_prompt";
@@ -20,7 +20,7 @@ export type UserPromptMessage = {
 };
 
 // Import for union type and local use
-import type { SDKMessage, CanUseToolResponse } from "@letta-ai/letta-code-sdk";
+import type { SDKMessage, CanUseToolResponse } from "@letta-ai/letta-agent-sdk";
 
 export type StreamMessage = SDKMessage | UserPromptMessage;
 
